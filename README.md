@@ -4,7 +4,7 @@ The idea of this project is two-fold: first, I needed to be able to interpolate 
 
 There are three deployment options: 
 
-1. For mac, download the app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)
+1. **For mac, download the app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)**
 2. Download this repo, navigate to it and launch the gui using: $python PyBP_G.py
 3. Download this repo, open up your python ide (e.g. spyder) and take a look at the example UserScript.py
 
