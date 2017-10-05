@@ -18,8 +18,8 @@ Download the .dmg and open it. You should see the app inside:
 Open the app, and you're presented with a blank window. Go to File and select 'Open Gifti Surface'. 
 Once the brain mesh appears, you can load either an overlay or network.
 
-For a network, select your '.edge' file which is a textfile which contains a 90x90 matrix. 
-For an overlay, select a '.txt' file which is a textfile containing a column vector of 90 values.
+* For a network, select your '.edge' file which is a textfile which contains a 90x90 matrix. 
+* For an overlay, select a '.txt' file which is a textfile containing a column vector of 90 values.
 
 ![GUI_Image](PyBPGUI.png)
 
