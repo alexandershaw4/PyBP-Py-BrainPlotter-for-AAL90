@@ -3,6 +3,8 @@
 '''
 PyBP: PyBrainPlot for cortical mesh
 
+Includes plotting functions for surface, network and overlays.
+Functions for mesh inflation, overlay registration, ...
 
 
 AS2017
@@ -25,7 +27,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 __all__ = ["GetMesh","PlotMesh","GetAAL","CtoN","PlotNet","cdist","spherefit",
            "minpoints","maxpoints","alignoverlay","PlotMeshwOverlay",
-           "GenTestNet","GenTestOverlay"]
+           "GenTestNet","GenTestOverlay","meshadj","normalize_v3","meshnormals",
+           "inflate"]
 
 thisdir = os.path.dirname(os.path.realpath(__file__))
 
@@ -43,6 +46,56 @@ def GetMesh(g):
     v = fixboundary(v)
 
     return v, f
+
+    
+def meshadj(v,f):
+    N = len(v)
+    f = np.int32(f)
+    x = np.concatenate((f[:,0],f[:,0],f[:,1],f[:,1],f[:,2],f[:,2]),axis=0)
+    y = np.concatenate((f[:,1],f[:,2],f[:,0],f[:,2],f[:,0],f[:,1]),axis=0)
+    A = np.empty([N,N])
+    
+    A[x,y] = 1
+    return A
+    
+def normalize_v3(arr):
+    ''' Normalize a numpy array of 3 component vectors shape=(n,3) '''
+    lens = np.sqrt( arr[:,0]**2 + arr[:,1]**2 + arr[:,2]**2 )
+    arr[:,0] /= lens
+    arr[:,1] /= lens
+    arr[:,2] /= lens                
+    return arr
+    
+def meshnormals(v,f):
+    norm = np.zeros( v.shape, dtype=v.dtype )
+    tris = v[f]          
+    n = np.cross( tris[::,1 ] - tris[::,0]  , tris[::,2 ] - tris[::,0] )
+    n = normalize_v3(n)
+
+    norm[ f[:,0] ] += n
+    norm[ f[:,1] ] += n
+    norm[ f[:,2] ] += n
+    meshnorms = normalize_v3(norm)
+    return meshnorms
+
+def inflate(v,f):
+    minxyz = np.array([v[:,0].min(),v[:,1].min(),v[:,2].min()])
+    maxxyz = np.array([v[:,0].max(),v[:,1].max(),v[:,2].max()])
+    
+    T = np.floor(len(v) * 0.003 -2)
+    b = 0.5;
+    w = 0.05;
+    A = meshadj(v,f)
+    
+    for i in range(int(T)):
+        N = meshnormals(v,f)
+        mv = np.inner(A,v.T) - v
+        
+        d = sum((mv*N).T)
+        rd = np.matlib.repmat(d,3,1)
+        v = v + b * (w*rd.T*N + (1-w)*mv)
+        v = np.mean((maxxyz-minxyz)/(v.max() - v.min())) * v
+    return v
 
 
 def PlotMesh(v,f):
