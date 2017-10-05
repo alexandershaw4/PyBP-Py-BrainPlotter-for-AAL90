@@ -2,11 +2,11 @@
 
 The idea of this project is two-fold: first, I needed to be able to interpolate data from the 90-node AAL atlas onto subjects cortical meshs. Second, I wanted to be able to plot both a functional overlay and a network (nodes & edges) simultaneously. 
 
-There are two deployment options: 
+There are three deployment options: 
 
-For mac, download the app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)
-
-Or download this repo and take a look at the example UserScript.py.
+1. For mac, download the app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)
+2. Download this repo, navigate to it and launch the gui using: $python PyBP_G.py
+3. Download this repo, open up your python ide (e.g. spyder) and take a look at the example UserScript.py
 
 
 # The App.
