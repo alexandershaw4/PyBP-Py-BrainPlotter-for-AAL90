@@ -78,6 +78,7 @@ class Window(Frame):
 
         # File menu items
         file.add_command(label="Open Gifti Surface (.gii)", command=self.opengifti)
+        file.add_command(label="Inflate Gifti Surface (.gii)", command=self.inflategifti)
         file.add_command(label="Add AAL90 Overlay (.txt)", command=self.addoverlay)
         file.add_command(label="Add AAL90 Network (.edge)", command=self.addnet)
         file.add_command(label="Generate Example Overlay", command=self.genoverlay)
@@ -103,7 +104,17 @@ class Window(Frame):
         self.v,self.f = GetMesh(self.gifti)
         self.plotgii()
         return self
-
+        
+    def inflategifti(self):
+        gifti = askopenfile(title="Select file:")
+        self.gifti = gifti.name
+        str = "\nUsing surface gifti: %s\n" % gifti.name
+        print(str)
+        self.v,self.f = GetMesh(self.gifti)
+        
+        self.v = inflate(self.v,self.f)
+        self.plotgii()
+        return self
 
     def genoverlay(self):
         overlay = GenTestOverlay()

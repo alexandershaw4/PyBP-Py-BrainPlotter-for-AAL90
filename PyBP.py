@@ -49,6 +49,7 @@ def GetMesh(g):
 
     
 def meshadj(v,f):
+    # Compute adjacency of mesh, given vertices and faces
     N = len(v)
     f = np.int32(f)
     x = np.concatenate((f[:,0],f[:,0],f[:,1],f[:,1],f[:,2],f[:,2]),axis=0)
@@ -95,6 +96,12 @@ def inflate(v,f):
         rd = np.matlib.repmat(d,3,1)
         v = v + b * (w*rd.T*N + (1-w)*mv)
         v = np.mean((maxxyz-minxyz)/(v.max() - v.min())) * v
+    
+    Centre = spherefit(v)
+    v[0] = v[0] - Centre[0]
+    v[1] = v[1] - Centre[1]
+    v[2] = v[2] - Centre[2]
+    v = fixboundary(v)
     return v
 
 
