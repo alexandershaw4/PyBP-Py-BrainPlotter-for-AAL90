@@ -16,11 +16,14 @@ Download the .dmg and open it. You should see the app inside:
 
 ![App Image](app_logo.png)
 
-Open the app, and you're presented with a blank window. Go to File and select 'Open Gifti Surface'. 
-Once the brain mesh appears, you can load either an overlay or network.
+* Open the app, and you're presented with a blank window. 
+* Go to File and select 'Open Gifti Surface' or 'Inflate Gifti Surface' and choose your .gii
+* Once the brain mesh appears, you can load either an overlay or network, or both.
 
 * For a network, select your '.edge' file which is a textfile which contains a 90x90 matrix. 
 * For an overlay, select a '.txt' file which is a textfile containing a column vector of 90 values.
+
+* Note: when selecting an overlay, an iterative closest point algorithm aligns and matches the surface points to the template (atlas) points. This process is a *bit* slow, and the app will look frozen with the spinning wheel of death, but hang tight for a minute... it hasn't crashed!
 
 ![GUI_Image](PyBPGUI.png)
 
