@@ -8,6 +8,7 @@ There are three deployment options:
 2. Download this repo, navigate to it and launch the gui using: $python PyBP_G.py
 3. Download this repo, open up your python ide (e.g. spyder) and take a look at the example UserScript.py
 
+4. (Get a template mesh & example overlay and network files, [here](https://www.dropbox.com/sh/w35j02u45602u4g/AACjzoSq-H7uskskiKBois3Ba?dl=0))
 
 # The App.
 
