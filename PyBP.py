@@ -233,6 +233,7 @@ def fixboundary(v):
     v[:,0] = m[0] + [M[0]-m[0]] * (v[:,0] - v[:,0].min()) / (v[:,0].max() - v[:,0].min() )
     v[:,1] = m[1] + [M[1]-m[1]] * (v[:,1] - v[:,1].min()) / (v[:,1].max() - v[:,1].min() )   
     v[:,2] = m[2] + [M[2]-m[2]] * (v[:,2] - v[:,2].min()) / (v[:,2].max() - v[:,2].min() )    
+    
     return v
     
 def minpoints(x,n):

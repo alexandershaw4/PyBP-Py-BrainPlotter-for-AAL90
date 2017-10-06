@@ -39,6 +39,7 @@ else:
 
 import ttk
 from tkFileDialog import askopenfile
+from tkFileDialog import asksaveasfile
 
 
 # Here, we are creating our class, Window, and inheriting from the Frame
@@ -83,7 +84,7 @@ class Window(Frame):
         file.add_command(label="Add AAL90 Network (.edge)", command=self.addnet)
         file.add_command(label="Generate Example Overlay", command=self.genoverlay)
         file.add_command(label="Generate Example Network", command=self.gennet)
-        file.add_command(label="Clear", command=self.closefigure)        
+        file.add_command(label="Save Image", command=self.saveim)     
         file.add_command(label="Exit", command=self.client_exit)
         
         #added "file" to our menu
@@ -93,8 +94,7 @@ class Window(Frame):
     def client_exit(self):
         exit()
     
-    def closefigure(self):
-        self.ax.clear()
+
                 
     def opengifti(self):
         gifti = askopenfile(title="Select file:")
@@ -104,6 +104,12 @@ class Window(Frame):
         self.v,self.f = GetMesh(self.gifti)
         self.plotgii()
         return self
+    
+    def saveim(self):
+        thefile = asksaveasfile(title="Save name: ")
+        fname = thefile.name
+        fname = fname + ".png"
+        self.fig.savefig(fname, format='png', dpi=800)
         
     def inflategifti(self):
         gifti = askopenfile(title="Select file:")
