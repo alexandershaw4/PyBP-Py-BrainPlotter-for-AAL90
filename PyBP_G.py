@@ -24,6 +24,7 @@ import FileDialog
 #sys.path.append("/Users/Alex/code/PyBP/")
 from PyBP import *
 
+import os
 import sys
 if sys.version_info < (3, 0):
     # Python 2
@@ -86,6 +87,7 @@ class Window(Frame):
         file.add_command(label="Generate Example Overlay", command=self.genoverlay)
         file.add_command(label="Generate Example Network", command=self.gennet)
         file.add_command(label="Save Image", command=self.saveim)     
+        file.add_command(label="Clear", command=self.clearfig)    
         file.add_command(label="Exit", command=self.client_exit)
         
         #added "file" to our menu
@@ -98,11 +100,26 @@ class Window(Frame):
                 print("Loading template")
                 self.v,self.f = template()
                 self.plotgii()
+            elif os.path.isfile(inpt):
+                pmsg = "Loading mesh: %s\n" % inpt 
+                print(pmsg)
+                self.v,self.f = GetMesh(inpt)
+                self.plotgii()
+
 
         
     def client_exit(self):
         exit()
     
+    def clearfig(self):
+        self.canvas.get_tk_widget().delete("all")
+        self.ax = None
+        self.fig = None
+        self.canvas = None
+        self.collec = None
+        root.update()        
+        return self
+        #self.canvas.draw()
 
                 
     def opengifti(self):
@@ -161,6 +178,7 @@ class Window(Frame):
         # Existing fig handle info
         ax = self.ax
         collec = self.collec
+        collec.cmap = cm.jet
         
         colors = np.mean(y[self.f], axis=1) # map vertex cols to face cols!
         newy=colors[:,0]
@@ -236,7 +254,8 @@ class Window(Frame):
         collec = self.ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
                                          triangles=self.f, linewidth=0.,
                                          antialiased=False,
-                                         color='white',alpha=0.05)
+                                         alpha=0.05,
+                                         color='white')
         self.collec = collec
         canvas.show()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -456,7 +475,7 @@ class Window(Frame):
 # you can later have windows within windows.
 root = Tk()
 
-root.geometry("1000x850")
+root.geometry("1100x850")
 
 #creation of an instance
 app = Window(root)
