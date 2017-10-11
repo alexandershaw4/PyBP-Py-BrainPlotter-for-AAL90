@@ -14,11 +14,13 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 #import nibabel as nb
 from nibabel import gifti
+import nibabel as nib
 import numpy.matlib
 import operator
 from matplotlib import cm
 import os
 from scipy.interpolate import interp1d
+from skimage import measure
 import sys
 
 from matplotlib import pyplot as plt
@@ -28,7 +30,7 @@ from mpl_toolkits.mplot3d import Axes3D
 __all__ = ["GetMesh","PlotMesh","GetAAL","CtoN","PlotNet","cdist","spherefit",
            "minpoints","maxpoints","alignoverlay","PlotMeshwOverlay",
            "GenTestNet","GenTestOverlay","meshadj","normalize_v3","meshnormals",
-           "inflate"]
+           "inflate","ReadNiftiOverlay","template"]
 
 thisdir = os.path.dirname(os.path.realpath(__file__))
 
@@ -47,6 +49,10 @@ def GetMesh(g):
 
     return v, f
 
+def template():
+    g = resource_path('spm.surf.gii')
+    v,f = GetMesh(g)
+    return v,f
     
 def meshadj(v,f):
     # Compute adjacency of mesh, given vertices and faces
@@ -274,7 +280,7 @@ def alignoverlay(mv,f,o):
     r  = 1200                       # number of closest points
     w  = np.linspace(.1,1,r)        # 'weights'
     w  = np.flipud(w)
-    M  = np.empty([len(o),len(mv)])
+    #M  = np.empty([len(o),len(mv)])
     
     S  = np.array([o.min(),o.max()]) # ensure we can retain min/max vals
     x  = v[:,0]
@@ -286,7 +292,7 @@ def alignoverlay(mv,f,o):
         dist = cdist(mv,v[i])
         [junk,ind] = minpoints(dist,r)
         OL[i,ind]  = w*o[i]
-        M[i,ind]   = w
+        #M[i,ind]   = w
     
     numnan = 0;
     L = np.zeros([OL.shape[1],1]) # use zeros (instead empty) as speed not issue
@@ -307,7 +313,7 @@ def alignoverlay(mv,f,o):
     
 def PlotMeshwOverlay(v,f,y,a):
     # plot a surface (vert & faces) as a 3D patch (trisurf) with overlay
-    
+
     limits = [v.min(), v.max()]
     #cmap   = 'coolwarm'
     fig = plt.figure()
@@ -317,7 +323,7 @@ def PlotMeshwOverlay(v,f,y,a):
     
     #cmp = cm.jet(y)
     #cmp=np.squeeze(cmp)
-    
+            
     collec = ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
                                 triangles=f, linewidth=0.,
                                 antialiased=False,
@@ -347,5 +353,29 @@ def GenTestOverlay():
     o = np.random.randint(10,size=(90,1))
     return o
     
+def ReadNiftiOverlay(y):
+    y = nib.load(y)
+    data = np.squeeze(y.get_data())
+    Sv,Sf,N,vals  = measure.marching_cubes(data,0.5)
+    vals = vals[np.newaxis].T
+    return Sv,Sf,vals
 
 
+
+#    from skimage import restoration
+#    from skimage import img_as_float
+#    im_float = img_as_float(data)
+#    im_denoised = restoration.nl_means_denoising(data, h=0.001)
+#    
+#    from scipy import ndimage
+#    from skimage import morphology
+#    # Black tophat transformation (see https://en.wikipedia.org/wiki/Top-hat_transform)
+#    hat = ndimage.black_tophat(im_denoised, 7)
+#    # Combine with denoised image
+##    hat -= 0.3 * im_denoised
+##    # Morphological dilation to try to remove some holes in hat image
+##    hat = morphology.dilation(hat)
+#
+#    R = [np.min(hat.flatten()),np.max(hat.flatten())]
+#    d = (R[1]-R[0])*0.2
+    

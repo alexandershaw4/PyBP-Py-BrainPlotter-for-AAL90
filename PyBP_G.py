@@ -70,6 +70,7 @@ class Window(Frame):
         # allowing the widget to take the full space of the root window
         self.pack(fill=BOTH, expand=1)
 
+        
         # creating a menu instance
         menu = Menu(self.master)
         self.master.config(menu=menu)
@@ -89,6 +90,14 @@ class Window(Frame):
         
         #added "file" to our menu
         menu.add_cascade(label="File", menu=file)
+        
+        # if command line included 'overlay' use the root template mesh?
+        if len(sys.argv) == 2:
+            inpt = sys.argv[1]
+            if inpt == "template":
+                print("Loading template")
+                self.v,self.f = template()
+                self.plotgii()
 
         
     def client_exit(self):
@@ -133,9 +142,13 @@ class Window(Frame):
         
         overlayfile = askopenfile(title="Select overlay (90 value .txt file)")
         overlay = overlayfile.name
+    
+        strg = "Using overlay file: %s\n" % overlay
+        msg  = "Interpolating AAL overlay onto this surface"
+        root.update()
+        # add a label ?
 
-        str = "Using overlay file: %s\n" % overlay
-        print(str)    
+        print(strg)    
         o = np.loadtxt(overlay)
         self.overlay = o
         self.plotoverlay()
