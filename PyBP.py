@@ -11,6 +11,7 @@ AS2017
 '''
 # imports
 from __future__ import absolute_import, division, print_function
+import matplotlib
 import numpy as np
 #import nibabel as nb
 from nibabel import gifti
@@ -26,11 +27,13 @@ import sys
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import proj3d
 
 __all__ = ["GetMesh","PlotMesh","GetAAL","CtoN","PlotNet","cdist","spherefit",
            "minpoints","maxpoints","alignoverlay","PlotMeshwOverlay",
            "GenTestNet","GenTestOverlay","meshadj","normalize_v3","meshnormals",
-           "inflate","ReadNiftiOverlay","template"]
+           "inflate","ReadNiftiOverlay","template","orthogonal_proj",
+           "curvature","reducemesh","parseVertices"]
 
 thisdir = os.path.dirname(os.path.realpath(__file__))
 
@@ -66,7 +69,7 @@ def meshadj(v,f):
     return A
     
 def normalize_v3(arr):
-    ''' Normalize a numpy array of 3 component vectors shape=(n,3) '''
+    # Normalize a numpy array of 3 component vectors shape=(n,3) 
     lens = np.sqrt( arr[:,0]**2 + arr[:,1]**2 + arr[:,2]**2 )
     arr[:,0] /= lens
     arr[:,1] /= lens
@@ -85,6 +88,84 @@ def meshnormals(v,f):
     meshnorms = normalize_v3(norm)
     return meshnorms
 
+def parseVertices(vertices):
+    # Remove dupicate vertices
+    # Perform lex sort and get sorted data
+    sorted_idx = np.lexsort(vertices.T)
+    sorted_data =  vertices[sorted_idx,:]
+    # Get unique row mask
+    mask = np.any(np.diff(sorted_data,axis=0),1)
+    row_mask = np.append([True],mask)
+    # Get unique rows
+    vertices = sorted_data[row_mask]
+    
+    return vertices
+
+def curvature(v,f):
+    
+    A  = meshadj(v,f)
+    C  = np.inner(A,v.T)
+    N  = meshnormals(v,f)
+    s  = np.sign(sum(N.T*C.T))
+    sq = np.sqrt(sum((C*C).T))
+    Curv = s * sq
+    return Curv
+    
+
+def reducemesh(v,f):
+    # reduce a mesh by removing vertices of unimportant curvature
+    #
+    # AS
+    Curv = curvature(v,f)
+    A    = meshadj(v,f)
+    dv = v.copy()
+    df = f.copy()
+    aim  = int(np.round(v.shape[0]*.25)) # 25% reduction
+    ofst = int(np.round(aim/20))                       # n recalc curvature
+    aim  = int(np.round(aim/ofst))
+    
+    for n in range(aim):
+        info = "Step %d" % (n+1)
+        info2= " : number of vertices = %d" % dv.shape[0]
+        info3= " (faces: %d)" % df.shape[0]
+        
+        print(info + info2 + info3)
+        #V,I = minpoints(abs(Curv)-abs(Curv).mean(),ofst)
+        V,I = minpoints(abs(Curv)-np.median(abs(Curv)),ofst)
+        I   = np.sort(I)
+        for j in range(len(I)):
+            if I[j] > 0:
+                dv = np.delete(dv, I[j], axis=0)
+            
+                # decrease face values above I[j]
+                fordec = np.array(np.where(df >= I[j]))
+                df[fordec[0],fordec[1]] = df[fordec[0],fordec[1]]-1
+                I = I - 1
+            
+                these = np.where(df == I[j])
+                if np.any(dv==v[I[j]-1]):
+                    A    = meshadj(dv,df)
+                    finds = np.array(np.where(A[I[j]-1]>0))
+                    finds = finds[0]
+                    if finds.size == 0:
+                        finds = np.array([I[j]-1])
+                        
+                    df[these[0],these[1]] = finds[0]
+                    #df[these[0],these[1]] = I[j]-1
+                    Curv = curvature(dv,df)   
+                    Curv[np.isnan(Curv)]=0
+                    
+                else:
+                    df[these[0],these[1]] = 0  
+                df = parseVertices(df)
+    #df = parseVertices(df)
+    check = df < 0
+    df[check] = 0
+    return dv,df
+            
+    
+        
+    
 def inflate(v,f):
     minxyz = np.array([v[:,0].min(),v[:,1].min(),v[:,2].min()])
     maxxyz = np.array([v[:,0].max(),v[:,1].max(),v[:,2].max()])
@@ -110,7 +191,16 @@ def inflate(v,f):
     v = fixboundary(v)
     return v
 
-
+def orthogonal_proj(zfront, zback):
+    a = (zfront+zback)/(zfront-zback)
+    b = -2*(zfront*zback)/(zfront-zback)
+    # -0.0001 added for numerical stability as suggested in:
+    # http://stackoverflow.com/questions/23840756
+    return numpy.array([[1,0,0,0],
+                        [0,1,0,0],
+                        [0,0,a,b],
+                        [0,0,-0.0001,zback]])
+    
 def PlotMesh(v,f):
     # plot a surface (vert & faces) as a 3D patch (trisurf)
     limits = [v.min(), v.max()]
@@ -124,6 +214,7 @@ def PlotMesh(v,f):
                                 triangles=f, linewidth=0.,
                                 antialiased=False,
                                 color='white',alpha=0.1)
+    proj3d.persp_transformation = orthogonal_proj
     return ax, p3dcollec, fig
 
 def GetAAL():

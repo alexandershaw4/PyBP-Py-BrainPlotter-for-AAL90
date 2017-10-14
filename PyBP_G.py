@@ -15,6 +15,7 @@ from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import proj3d
 from matplotlib import cm
 import numpy as np
 import FileDialog
@@ -237,7 +238,16 @@ class Window(Frame):
         canvas.show()        
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
         
-        
+    def orthogonal_proj(self, zfront, zback):
+        a = (zfront+zback)/(zfront-zback)
+        b = -2*(zfront*zback)/(zfront-zback)
+        # -0.0001 added for numerical stability as suggested in:
+            # http://stackoverflow.com/questions/23840756
+        return numpy.array([[1,0,0,0],
+                                [0,1,0,0],
+                                [0,0,a,b],
+                                [0,0,-0.0001,zback]])
+    
     def plotgii(self):
         v = self.v
         # make figure - 
@@ -256,6 +266,7 @@ class Window(Frame):
                                          antialiased=False,
                                          alpha=0.05,
                                          color='white')
+        proj3d.persp_transformation = self.orthogonal_proj
         self.collec = collec
         canvas.show()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
