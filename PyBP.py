@@ -121,7 +121,7 @@ def reducemesh(v,f):
     dv = v.copy()
     df = f.copy()
     aim  = int(np.round(v.shape[0]*.25)) # 25% reduction
-    ofst = int(np.round(aim/20))                       # n recalc curvature
+    ofst = int(np.round(aim/20))         # when recalc curvature
     aim  = int(np.round(aim/ofst))
     
     for n in range(aim):
@@ -131,8 +131,9 @@ def reducemesh(v,f):
         
         print(info + info2 + info3)
         #V,I = minpoints(abs(Curv)-abs(Curv).mean(),ofst)
-        V,I = minpoints(abs(Curv)-np.median(abs(Curv)),ofst)
-        I   = np.sort(I)
+        #V,I = minpoints(abs(Curv)-np.median(abs(Curv)),ofst)
+        V,I = minpoints(abs(Curv),ofst)
+        #I   = np.sort(I)
         for j in range(len(I)):
             if I[j] > 0:
                 dv = np.delete(dv, I[j], axis=0)
@@ -140,23 +141,27 @@ def reducemesh(v,f):
                 # decrease face values above I[j]
                 fordec = np.array(np.where(df >= I[j]))
                 df[fordec[0],fordec[1]] = df[fordec[0],fordec[1]]-1
-                I = I - 1
+                #I = I - 1
+                I[j:] = I[j:] - 1
             
                 these = np.where(df == I[j])
                 if np.any(dv==v[I[j]-1]):
                     A    = meshadj(dv,df)
                     finds = np.array(np.where(A[I[j]-1]>0))
-                    finds = finds[0]
+
                     if finds.size == 0:
                         finds = np.array([I[j]-1])
+                    else:
+                        thivv,thisi = minpoints(np.abs(finds-I[j]).T,1)
+                        finds = finds[0][thisi]
                         
                     df[these[0],these[1]] = finds[0]
                     #df[these[0],these[1]] = I[j]-1
                     Curv = curvature(dv,df)   
-                    Curv[np.isnan(Curv)]=0
+                    Curv[np.isnan(Curv)]=Curv.max()
                     
                 else:
-                    df[these[0],these[1]] = 0  
+                    df[these[0],these[1]] = I[j]-1
                 df = parseVertices(df)
     #df = parseVertices(df)
     check = df < 0
