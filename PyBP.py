@@ -11,7 +11,7 @@ AS2017
 '''
 # imports
 from __future__ import absolute_import, division, print_function
-import matplotlib
+#import matplotlib
 import numpy as np
 #import nibabel as nb
 from nibabel import gifti
@@ -24,8 +24,9 @@ from scipy.interpolate import interp1d
 from skimage import measure
 import sys
 
-from matplotlib import pyplot as plt
-import matplotlib as mpl
+#from matplotlib import pyplot as plt
+#import matplotlib as mpl
+from mayavi import mlab
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import proj3d
 
@@ -208,19 +209,25 @@ def orthogonal_proj(zfront, zback):
     
 def PlotMesh(v,f):
     # plot a surface (vert & faces) as a 3D patch (trisurf)
-    limits = [v.min(), v.max()]
-    cmap   = 'coolwarm'
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d', xlim=limits, ylim=limits)
-    ax.view_init(elev=0, azim=0)
-    ax.set_axis_off()
-
-    p3dcollec = ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
-                                triangles=f, linewidth=0.,
-                                antialiased=False,
-                                color='white',alpha=0.1)
-    proj3d.persp_transformation = orthogonal_proj
-    return ax, p3dcollec, fig
+    fig = mlab.figure(1, bgcolor=(0, 0, 0))
+    pts = mlab.triangular_mesh(v[:,0], v[:,1], v[:,2], f,color=(1,1,1),opacity=0.3)
+    mlab.get_engine().scenes[0].scene.x_plus_view()
+    mlab.view(0., 0.)
+    
+    
+#    limits = [v.min(), v.max()]
+#    cmap   = 'coolwarm'
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111, projection='3d', xlim=limits, ylim=limits)
+#    ax.view_init(elev=0, azim=0)
+#    ax.set_axis_off()
+#
+#    p3dcollec = ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
+#                                triangles=f, linewidth=0.,
+#                                antialiased=False,
+#                                color='white',alpha=0.1)
+#    proj3d.persp_transformation = orthogonal_proj
+    return pts, fig #ax, p3dcollec, fig
 
 def GetAAL():
     # read the AAL90 source vertex and label lists
@@ -264,30 +271,43 @@ def CtoN(A,AALv):
     vv = vv[1:]
     return xx, yy, vv
 
-def PlotNet(xx,yy,vv,ax,fig):
-    #iv = (vv - vv.min())/(vv.max()-vv.min())
-    #cmap = cm.jet(iv)
+def PlotNet(xx,yy,vv):#,ax,fig):
+    
     
     jet = cm.get_cmap('jet') 
     cNorm  = cm.colors.Normalize(vmin=vv.min(), vmax=vv.max())
     scalarMap = cm.ScalarMappable(norm=cNorm, cmap=jet)
-    
-    
+
     for i in range(len(xx)):
         colorVal = scalarMap.to_rgba(vv[i])
-        ax.plot([xx[i][0], yy[i][0]],[xx[i][1], yy[i][1]],[xx[i][2], yy[i][2]],c=colorVal)
-        ax.scatter(xx[i][0],xx[i][1],xx[i][2])
-        ax.scatter(yy[i][0],yy[i][1],yy[i][2])
+        colorVal = colorVal[0:3]
+        mlab.plot3d([xx[i][0], yy[i][0]],[xx[i][1], yy[i][1]],[xx[i][2], yy[i][2]],color=colorVal,line_width=10,tube_radius=2)
+        mlab.points3d(xx[i][0],xx[i][1],xx[i][2],color=(1,0,0),scale_factor=5)
+        mlab.points3d(yy[i][0],yy[i][1],yy[i][2],color=(1,0,0),scale_factor=5)
+        
+    #mlab.colorbar(title='Edge')
     
-    fig.subplots_adjust(bottom=0.25)
-    ax1 = fig.add_axes([0.05, 0.10, 0.9, 0.1])
-    norm = mpl.colors.Normalize(vmin=vv.min(), vmax=vv.max())
-    cb1 = mpl.colorbar.ColorbarBase(ax1, cmap=cm.jet,
-                               norm=norm,
-                               orientation='horizontal')
-    cb1.set_label('Edge strength')
+    #jet = cm.get_cmap('jet') 
+    #cNorm  = cm.colors.Normalize(vmin=vv.min(), vmax=vv.max())
+    #scalarMap = cm.ScalarMappable(norm=cNorm, cmap=jet)
+    
+    
+#    for i in range(len(xx)):
+#        colorVal = scalarMap.to_rgba(vv[i])
+#        ax.plot([xx[i][0], yy[i][0]],[xx[i][1], yy[i][1]],[xx[i][2], yy[i][2]],c=colorVal)
+#        ax.scatter(xx[i][0],xx[i][1],xx[i][2])
+#        ax.scatter(yy[i][0],yy[i][1],yy[i][2])
+#    
+#    fig.subplots_adjust(bottom=0.25)
+#    ax1 = fig.add_axes([0.05, 0.10, 0.9, 0.1])
+#
+#    norm = cm.colors.Normalize(vmin=vv.min(), vmax=vv.max())
+#    cb1  = cm.colorbar.ColorbarBase(ax1, cmap=cm.jet,
+#                                norm=norm,
+#                                orientation='horizontal')
+#    cb1.set_label('Edge strength')
 
-    return ax
+    return mlab
 
 #def PlotLabels(xx,yy,ax):
 #    for i in range(len(xx)):
@@ -410,31 +430,39 @@ def alignoverlay(mv,f,o):
 def PlotMeshwOverlay(v,f,y,a):
     # plot a surface (vert & faces) as a 3D patch (trisurf) with overlay
 
-    limits = [v.min(), v.max()]
-    #cmap   = 'coolwarm'
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d', xlim=limits, ylim=limits)
-    ax.view_init(elev=0, azim=0)
-    ax.set_axis_off()
     
-    #cmp = cm.jet(y)
-    #cmp=np.squeeze(cmp)
-            
-    collec = ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
-                                triangles=f, linewidth=0.,
-                                antialiased=False,
-                                cmap=cm.jet,alpha=a)
-    #shade=False,
-    #yf = y[f]
-    #colors = np.amax(yf,axis=1)
     
-    colors = np.mean(y[f], axis=1) # map vertex cols to face cols!
-    newy=colors[:,0]
-    collec.set_array(newy)
-    ax.add_collection(collec)
-    fig.colorbar(collec, ax=ax)
+    
+    fig = mlab.figure(1, bgcolor=(0, 0, 0))
+    pts = mlab.triangular_mesh(v[:,0], v[:,1], v[:,2], f,scalars=y[:,0],opacity=a)
+    mlab.get_engine().scenes[0].scene.x_plus_view()
+    mlab.view(0., 0.)
+    mlab.colorbar(title="overlay")
+#    limits = [v.min(), v.max()]
+#    #cmap   = 'coolwarm'
+#    fig = plt.figure()
+#    ax = fig.add_subplot(111, projection='3d', xlim=limits, ylim=limits)
+#    ax.view_init(elev=0, azim=0)
+#    ax.set_axis_off()
+#    
+#    #cmp = cm.jet(y)
+#    #cmp=np.squeeze(cmp)
+#            
+#    collec = ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
+#                                triangles=f, linewidth=0.,
+#                                antialiased=False,
+#                                cmap=cm.jet,alpha=a)
+#    #shade=False,
+#    #yf = y[f]
+#    #colors = np.amax(yf,axis=1)
+#    
+#    colors = np.mean(y[f], axis=1) # map vertex cols to face cols!
+#    newy=colors[:,0]
+#    collec.set_array(newy)
+#    ax.add_collection(collec)
+#    fig.colorbar(collec, ax=ax)
 
-    return ax, collec, fig
+    return pts, fig #ax, collec, fig
     
     
 def GenTestNet():

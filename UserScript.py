@@ -19,11 +19,11 @@ thisdir = os.path.dirname(os.path.realpath(__file__))
 
 # both overlay & network
 #-----------------------
-g   = thisdir + "/inflated_8k.gii"  # the brain surface (gii)
+g   = thisdir + "/spm.surf.gii"  # the brain surface (gii)
 v,f = GetMesh(g)                    # get vertices & faces
 
 # load a t-vec of length 90
-funcfile = thisdir + "/TVec.txt"
+funcfile = thisdir + "/OverlayData.txt"
 o = np.loadtxt(funcfile)
 y = alignoverlay(v,f,o) 
 
@@ -32,17 +32,17 @@ file     = thisdir + "/exnet.edge"
 A        = np.loadtxt(file)  # load .edge file (90x90 matrix)
 xx,yy,vv = CtoN(A,AALv)
 
-ax, p3dcollec, fig = PlotMeshwOverlay(v,f,y,.05)
-PlotNet(xx,yy,vv,ax,fig)
+PlotMeshwOverlay(v,f,y,.05)
+PlotNet(xx,yy,vv)
 fig.show()
 
 
-#from matplotlib import animation
-#def rotate(angle):
-#    ax.view_init(azim=angle)
-#
-#rot_animation = animation.FuncAnimation(fig, rotate, frames=np.arange(0,362,2),interval=50)
-#rot_animation.save('rotation1.gif', dpi=150, writer='imagemagick')
+from matplotlib import animation
+def rotate(angle):
+    ax.view_init(azim=angle)
+
+rot_animation = animation.FuncAnimation(fig, rotate, frames=np.arange(0,362,2),interval=50)
+rot_animation.save('NewkRandStatsRotate.gif', dpi=150, writer='imagemagick')
 
 #
 ## Read a gifti surface and plot

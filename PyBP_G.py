@@ -8,7 +8,7 @@ AS
 
 
 import matplotlib
-matplotlib.use("TkAgg")
+matplotlib.use("TkAgg") #WXAgg or #TkAgg
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
@@ -252,29 +252,36 @@ class Window(Frame):
         v = self.v
         # make figure - 
         limits = [self.v.min(), self.v.max()]
-        self.fig = plt.figure()
-        fig = self.fig
-        f = fig
+        fig = mlab.figure(1, bgcolor=(0, 0, 0))
+        pts = mlab.triangular_mesh(v[:,0], v[:,1], v[:,2], f,color=(1,1,1),opacity=0.3)
+        mlab.get_engine().scenes[0].scene.x_plus_view()
+        mlab.view(0., 0.)
+#        self.fig = plt.figure()
+#        fig = self.fig
+#        f = fig
+#        
+#        canvas = FigureCanvasTkAgg(f, self)
+#        self.ax = fig.add_subplot(111, projection='3d',xlim=limits, ylim=limits)
+#        self.ax.view_init(elev=0, azim=0)
+#        self.ax.set_axis_off()        
+#  
+#        collec = self.ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
+#                                         triangles=self.f, linewidth=0.,
+#                                         antialiased=False,
+#                                         alpha=0.05,
+#                                         color='white')
+#        proj3d.persp_transformation = self.orthogonal_proj
+#        self.collec = collec
+#        canvas.show()
+#        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+#
+#        toolbar = NavigationToolbar2TkAgg(canvas, self)
+#        toolbar.update()
+#        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
+#        self.canvas = canvas
+        self.fig = fig
+        self.pts = pts
         
-        canvas = FigureCanvasTkAgg(f, self)
-        self.ax = fig.add_subplot(111, projection='3d',xlim=limits, ylim=limits)
-        self.ax.view_init(elev=0, azim=0)
-        self.ax.set_axis_off()        
-  
-        collec = self.ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
-                                         triangles=self.f, linewidth=0.,
-                                         antialiased=False,
-                                         alpha=0.05,
-                                         color='white')
-        proj3d.persp_transformation = self.orthogonal_proj
-        self.collec = collec
-        canvas.show()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-
-        toolbar = NavigationToolbar2TkAgg(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True) 
-        self.canvas = canvas
         
         
         
