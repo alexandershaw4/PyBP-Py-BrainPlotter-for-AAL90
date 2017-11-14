@@ -3,11 +3,11 @@
 block_cipher = None
 
 
-a = Analysis(['PyBP_G.py'],
-             pathex=['/Users/Alex/code/PyBP_G'],
+a = Analysis(['New_PyBP.py'],
+             pathex=['/Users/Alex/code/PyBP'],
              binaries=[],
-             datas=[('AALv.txt', '.'), ('aal_labels.txt', '.')],
-             hiddenimports=['Tkinter', 'FixT', 'scipy', 'matplotlib'],
+             datas=[('AALv.txt', '.'), ('aal_labels.txt', '.'), ('spm.surf.gii', '.')],
+             hiddenimports=['traitsui.toolkit', 'traitsui', 'scipy', 'matplotlib'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -21,13 +21,13 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='PyBP_G',
+          name='New_PyBP',
           debug=False,
           strip=False,
           upx=True,
           runtime_tmpdir=None,
           console=False , icon='pybp.icns')
 app = BUNDLE(exe,
-             name='PyBP_G.app',
+             name='New_PyBP.app',
              icon='pybp.icns',
              bundle_identifier=None)
