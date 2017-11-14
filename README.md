@@ -2,13 +2,17 @@
 
 The idea of this project is two-fold: first, I needed to be able to interpolate data from the 90-node AAL atlas onto subjects cortical meshs. Second, I wanted to be able to plot both a functional overlay and a network (nodes & edges) simultaneously. 
 
+Code version now uses a OpenGL, has traits(ui) rather than Tkinter interface and uses mayavi rather than matplotlib. 
+Compiled version is still the old tkinter version (slow).
+
 There are three deployment options: 
 
 1. **For mac, download the app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)**
-2. Download this repo, navigate to it and launch the gui using: $python PyBP_G.py
+2. Download this repo, navigate to it and launch the gui using: $python New_PyBP.py
 3. Download this repo, open up your python ide (e.g. spyder) and take a look at the example UserScript.py
 
-4. (Get a template mesh & example overlay and network files, [here](https://www.dropbox.com/sh/w35j02u45602u4g/AACjzoSq-H7uskskiKBois3Ba?dl=0))
+4. If you just want the functions, import PyBP: ```from PyBP import *```
+5. (Get a template mesh & example overlay and network files, [here](https://www.dropbox.com/sh/w35j02u45602u4g/AACjzoSq-H7uskskiKBois3Ba?dl=0))
 
 # The App.
 
