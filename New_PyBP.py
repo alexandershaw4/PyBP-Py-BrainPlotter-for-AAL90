@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-TritsUI interface for PyBP
+TritsUI qt interface for PyBP
 
 
 
@@ -9,6 +9,16 @@ AS
 """
 
 # Enthought imports.
+#import pyface.qt
+import sip
+sip.setapi('QDate', 2)
+sip.setapi('QDateTime', 2)
+sip.setapi('QString', 2)
+sip.setapi('QTextStream', 2)
+sip.setapi('QTime', 2)
+sip.setapi('QUrl', 2)
+sip.setapi('QVariant', 2)
+
 
 from traits.api import HasTraits, Instance, Button, File
 from traitsui.api import View, Item, MenuBar, Menu, Action, Separator, \
@@ -21,6 +31,9 @@ from tvtk.pyface.scene_editor import SceneEditor
 
 from mayavi.tools.mlab_scene_model import MlabSceneModel
 from mayavi.core.ui.mayavi_scene import MayaviScene
+
+from matplotlib import cm
+
 from mayavi.mlab import clf, draw
 
 import time
@@ -28,7 +41,7 @@ import numpy as np
 
 # My actual tools
 from PyBP import *
-from matplotlib import cm
+
 
 
 class ActorViewer(HasTraits):
@@ -44,7 +57,7 @@ class ActorViewer(HasTraits):
                      editor=SceneEditor(scene_class=MayaviScene),
                      show_label=False,
                      resizable=True,
-                     height=1000,
+                     height=600,
                      width=1000),
                 menubar=MenuBar(
                     Menu(Action(name="Load Gifti", action="opengifti"), # see Controller for

@@ -8,11 +8,14 @@ for PyBP
 AS2017
 '''
 from __future__ import absolute_import, division, print_function
+#import pyface.qt
+
+
 from .PyBP import *  
 from .nibabel import gifti
 #from mpl_toolkits.mplot3d import Axes3D
 #import matplotlib as mpl
-from matplotlib import cm
+
 
 from traits.api import HasTraits, Instance, Button, File
 from traitsui.api import View, Item, MenuBar, Menu, Action, Separator, \
@@ -26,3 +29,4 @@ from tvtk.pyface.scene_editor import SceneEditor
 from mayavi.tools.mlab_scene_model import MlabSceneModel
 from mayavi.core.ui.mayavi_scene import MayaviScene
 from mayavi.mlab import clf, draw
+from matplotlib import cm
