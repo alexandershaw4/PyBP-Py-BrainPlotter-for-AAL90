@@ -46,6 +46,20 @@ Overlay
 
 ![test overlay fig](fig2.png)
 
+
 # Rotate (vis Script only at the moment)
 
 ![BothRotate](rotation1.gif)
+
+# Functions
+
+* Read gifti files (using nibabel)
+* Fit a cortical mesh (e.g. template, glass brain) to AAL90 template source model
+* Align & interpolate functional overlay onto mesh
+* Plot mesh (using mayavi)
+* Plot overlay
+* Plot network from nxn numpy array
+* Inflate mesh
+* Compute mesh normals
+* Compute mesh adjacency
+* Sphere fitting
