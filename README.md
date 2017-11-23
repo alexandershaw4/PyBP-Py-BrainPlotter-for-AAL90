@@ -1,6 +1,6 @@
 # PyBP: (Py) Brain Plotter for AAL90
 
-The idea of this project is two-fold: first, I needed to be able to interpolate data from the 90-node AAL atlas onto subjects cortical meshs. Second, I wanted to be able to plot both a functional overlay and a network (nodes & edges) simultaneously. 
+The idea of this project is two-fold: first, I needed to be able to interpolate data from the 90-node AAL atlas onto subjects' cortical meshes. Second, I wanted to be able to plot both a functional overlay and a network (nodes & edges) simultaneously. 
 
 Code version now uses a OpenGL, has traits(ui) rather than Tkinter interface and uses mayavi rather than matplotlib. 
 Compiled version is still the old tkinter version (slow).
