@@ -10,15 +10,16 @@ AS
 
 # Enthought imports.
 #import pyface.qt
-import sip
-sip.setapi('QDate', 2)
-sip.setapi('QDateTime', 2)
-sip.setapi('QString', 2)
-sip.setapi('QTextStream', 2)
-sip.setapi('QTime', 2)
-sip.setapi('QUrl', 2)
-sip.setapi('QVariant', 2)
-
+# sip
+#sip.setapi('QDate', 2)
+#sip.setapi('QDateTime', 2)
+#sip.setapi('QString', 2)
+#sip.setapi('QTextStream', 2)
+#sip.setapi('QTime', 2)
+#sip.setapi('QUrl', 2)
+#sip.setapi('QVariant', 2)
+#import os
+#os.environ['ETS_TOOLKIT'] = 'qt4'
 
 from traits.api import HasTraits, Instance, Button, File
 from traitsui.api import View, Item, MenuBar, Menu, Action, Separator, \
