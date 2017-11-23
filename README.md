@@ -44,7 +44,7 @@ Network
 
 Overlay
 
-![test overlay fig](fig1.png)
+![test overlay fig](fig2.png)
 
 # Rotate (vis Script only at the moment)
 
