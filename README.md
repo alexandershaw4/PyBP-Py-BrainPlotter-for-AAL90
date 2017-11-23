@@ -5,6 +5,19 @@ The idea of this project is two-fold: first, I needed to be able to interpolate 
 Code version now uses a OpenGL, has traits(ui) rather than Tkinter interface and uses mayavi rather than matplotlib. 
 Compiled version is still the old tkinter version (slow).
 
+# Functions
+
+* Read gifti files (using nibabel)
+* Fit a cortical mesh (e.g. template, glass brain) to AAL90 template source model
+* Align & interpolate functional overlay onto mesh
+* Plot mesh (using mayavi)
+* Plot overlay
+* Plot network from nxn numpy array
+* Inflate mesh
+* Compute mesh normals
+* Compute mesh adjacency
+* Sphere fitting
+
 There are three deployment options: 
 
 1. **For mac, download the app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)**
@@ -51,15 +64,4 @@ Overlay
 
 ![BothRotate](rotation1.gif)
 
-# Functions
 
-* Read gifti files (using nibabel)
-* Fit a cortical mesh (e.g. template, glass brain) to AAL90 template source model
-* Align & interpolate functional overlay onto mesh
-* Plot mesh (using mayavi)
-* Plot overlay
-* Plot network from nxn numpy array
-* Inflate mesh
-* Compute mesh normals
-* Compute mesh adjacency
-* Sphere fitting
