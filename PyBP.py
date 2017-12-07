@@ -122,7 +122,7 @@ def reducemesh(v,f):
     dv = v.copy()
     df = f.copy()
     aim  = int(np.round(v.shape[0]*.25)) # 25% reduction
-    ofst = int(np.round(aim/20))         # when recalc curvature
+    ofst = int(np.round(aim/50))         # when recalc curvature
     aim  = int(np.round(aim/ofst))
     
     for n in range(aim):
@@ -131,10 +131,15 @@ def reducemesh(v,f):
         info3= " (faces: %d)" % df.shape[0]
         
         print(info + info2 + info3)
-        #V,I = minpoints(abs(Curv)-abs(Curv).mean(),ofst)
-        #V,I = minpoints(abs(Curv)-np.median(abs(Curv)),ofst)
+        Curv = curvature(dv,df)
+        Curv[np.isnan(Curv)]=Curv.min()
         V,I = minpoints(abs(Curv),ofst)
+        # shuffle sequence
+        rseq = np.random.permutation(range(len(I)))
+        V = V[rseq]
+        I = I[rseq]
         #I   = np.sort(I)
+        #ri = np.random.randint(ofst-1)
         for j in range(len(I)):
             if I[j] > 0:
                 dv = np.delete(dv, I[j], axis=0)
@@ -159,7 +164,7 @@ def reducemesh(v,f):
                     df[these[0],these[1]] = finds[0]
                     #df[these[0],these[1]] = I[j]-1
                     Curv = curvature(dv,df)   
-                    Curv[np.isnan(Curv)]=Curv.max()
+                    Curv[np.isnan(Curv)]=Curv.min()
                     
                 else:
                     df[these[0],these[1]] = I[j]-1
@@ -169,7 +174,36 @@ def reducemesh(v,f):
     df[check] = 0
     return dv,df
             
-    
+def newreducemesh(v,f):
+    # reduce a mesh by removing vertices close together, re-directing faces to clsest alternative
+    #
+    # AS
+    A    = meshadj(v,f)
+    dv = v.copy()
+    df = f.copy()
+
+    for i in range(len(dv)):
+		if i == len(dv):
+			print("Finished.")
+			break
+		A     = meshadj(dv,df)
+		adj   = np.array(np.where(A[i,:]>0))
+		alts  = np.squeeze(dv[adj])
+		if alts.any():
+			clos  = cdist(dv[i],alts)
+			vert,ind = minpoints(clos,1)
+			this  = dv[adj[0][ind][0]]
+			if abs(np.sum(abs(dv[i])-abs(this))) < 7:
+				str = "Removing vertex: %d (total: %d/%d) (%d%% reduction)" % (i, len(dv)-1, len(v), (float(len(dv))/float(len(v)))*100)
+				print(str)
+				dv[i] = this
+				xi,yi = np.where(df==i)    # replace face connections
+				df[xi,yi] = adj[0][ind[0]] # new vertex index
+				
+				xxi,yyi = np.where(df>i)   # redirect remaining faces
+				df[xxi,yyi] = df[xxi,yyi]-1
+				dv = parseVertices(dv)
+		
         
     
 def inflate(v,f):
