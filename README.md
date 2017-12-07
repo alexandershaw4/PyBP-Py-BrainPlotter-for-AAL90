@@ -30,7 +30,7 @@ There are three deployment options:
 5. (Get a template mesh & example overlay and network files, [here](https://www.dropbox.com/sh/w35j02u45602u4g/AACjzoSq-H7uskskiKBois3Ba?dl=0))
 
 # The App.
-
+ 
 Download the .dmg and open it. You should see the app inside:
 
 ![App Image](app_logo.png)
