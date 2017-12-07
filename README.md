@@ -18,6 +18,8 @@ Compiled version is still the old tkinter version (slow).
 * Compute mesh adjacency
 * Sphere fitting
 
+![test overlay fig](fig2.png)
+
 There are three deployment options: 
 
 1. **For mac, download the app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)**
