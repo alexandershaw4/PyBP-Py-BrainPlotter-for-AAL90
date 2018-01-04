@@ -1,0 +1,32 @@
+
+% OLD:
+
+pyinstaller --onefile --windowed --icon=pybp.icns --hidden-import=Tkinter --hidden-import=FixT --hidden-import=scipy --hidden-import=matplotlib --add-data=AALv.txt:. --add-data=aal_labels.txt:. --add-data=spm.surf.gii:. PyBP_G.py
+
+
+pyinstaller --onefile --windowed --additional-hooks-dir pyinstaller-hooks --runtime-hook pyinstaller-hooks/pyi_rth__tkinter.py --icon=pybp.icns --hidden-import=Tkinter --hidden-import=FixT --hidden-import=scipy --hidden-import=matplotlib --add-data=AALv.txt:. --add-data=aal_labels.txt:. --add-data=spm.surf.gii:. PyBP_G.py
+
+
+
+
+
+
+# TO PACKAGE IN .DMG:
+pushd dist
+hdiutil create ./PyBP_G.dmg -srcfolder PyBP_G.app -ov
+popd
+
+
+
+
+NEW:
+
+pyinstaller --onefile --windowed --icon=pybp.icns --hidden-import=traitsui.toolkit --hidden-import=traitsui.qt4 --hidden-import=pyface.ui.qt4 --hidden-import=traitsui --hidden-import=scipy --hidden-import=matplotlib --add-data=AALv.txt:. --add-data=aal_labels.txt:. --add-data=spm.surf.gii:. New_PyBP.py
+
+pyinstaller --runtime-hook=rthook_pyqt4.py --onefile --windowed --icon=pybp.icns --hidden-import=traitsui.toolkit --hidden-import=traitsui.qt4 --hidden-import=pyface.ui.qt4 --hidden-import=traitsui --hidden-import=scipy --add-data=AALv.txt:. --add-data=aal_labels.txt:. --add-data=NewSmoothed.gii:. New_PyBP.py
+
+
+
+% TO GET WORKING ON MAC:
+pip install pyside, then:
+export DYLD_LIBRARY_PATH=/Users/Alex/anaconda/lib/python2.7/site-packages/PySide
