@@ -54,7 +54,7 @@ def GetMesh(g):
     return v, f
 
 def template():
-    g = resource_path('spm.surf.gii')
+    g = resource_path('NewSmoothed.gii')
     v,f = GetMesh(g)
     return v,f
     

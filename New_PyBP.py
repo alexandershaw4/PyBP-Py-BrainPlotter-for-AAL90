@@ -9,8 +9,8 @@ AS
 """
 
 # Enthought imports.
-#import pyface.qt
-# sip
+import pyface.qt
+#import sip
 #sip.setapi('QDate', 2)
 #sip.setapi('QDateTime', 2)
 #sip.setapi('QString', 2)
@@ -18,12 +18,11 @@ AS
 #sip.setapi('QTime', 2)
 #sip.setapi('QUrl', 2)
 #sip.setapi('QVariant', 2)
-#import os
-#os.environ['ETS_TOOLKIT'] = 'qt4'
+import os
+os.environ['ETS_TOOLKIT'] = 'qt4' #'qt4'
 
 from traits.api import HasTraits, Instance, Button, File
-from traitsui.api import View, Item, MenuBar, Menu, Action, Separator, \
-                         CloseAction, HGroup, VGroup
+from traitsui.api import View, Item, MenuBar, Menu, Action, Separator, CloseAction, HGroup, VGroup
 from traitsui.file_dialog import open_file, TextInfo
 import traitsui.toolkit
 
