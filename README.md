@@ -40,14 +40,17 @@ For command line / Spyder use:
 * Mayavi
 * Traits / Traitsui
 * (Spyder / Anaconda)
+
 For compiled use:
 * PySide
 
 # The App.
  
 Download the code and compile it using pyinstaller, as per examples in PyCompile_PyBP. 
+
 Here's some screenshots of the standalone.
 
+![logo](app_logo.png)
 ![mesh](S3.png)
 ![ovla](S1.png)
 ![netw](S2.png)
@@ -66,6 +69,11 @@ Overlay
 
 ![test overlay fig](fig2.png)
 
+# Usage
 
+Access to options in gui by going to 'file'. Select load gifti, or inflate gifti, and select the .gii mesh to plot. Inflating is relatively quick, although it depends on the number of vertices in the mesh. Try out the 'NewSmoothed.gii' in the example directory.
 
+To load a functional overlay, select it from file and choose a textfile with 90 new-line delimited values corresponding to the usual order of the 90 nodes. See OverlayData.txt in the example download to see how this file should look. Once opened, the iterative closest point algorithm interpolates the values onto the mesh, after centering and scaling both cloud points (AAL and mesh vertices).
+
+To load a network, select it from the file menu and pick your .edge file. This is a usual .edge file (no .node file needed since it's always going to be the same set of nodes). The .edge contains a 90-by-90 matrix of connectivity values. (Note this can be easily written out from matlab using dlmwrite).
 
