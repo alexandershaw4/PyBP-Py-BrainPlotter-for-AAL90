@@ -1,11 +1,14 @@
 # PyBP: (Py) Brain Plotter for AAL90
 
-The idea of this project is two-fold: first, I needed to be able to interpolate data from the 90-node AAL atlas onto subjects' cortical meshes. Second, I wanted to be able to plot both a functional overlay and a network (nodes & edges) simultaneously. 
+The idea of this project is two-fold: 
+1) I needed to be able to interpolate data from the 90-node AAL atlas onto subjects' cortical meshes. 
+2) I wanted to be able to plot both a functional overlay and a network (nodes & edges) simultaneously. 
 
-Code version now uses a OpenGL, has traits(ui) rather than Tkinter interface and uses mayavi rather than matplotlib. 
-Compiled version is still the old tkinter version (slow).
+There are two versions:
+* Code version now uses a OpenGL, has traits(ui) rather than Tkinter interface and uses mayavi. Use this version.
+* Old compiled version is still the old tkinter + matplotlib version (slow).
 
-# Functions
+# The Functions
 
 * Read gifti files (using nibabel)
 * Fit a cortical mesh (e.g. template, glass brain) to AAL90 template source model
@@ -20,14 +23,16 @@ Compiled version is still the old tkinter version (slow).
 
 ![test overlay fig](fig2.png)
 
-There are three deployment options: 
 
-1. **For mac, download the app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)**
-2. Download this repo, navigate to it and launch the gui using: $python New_PyBP.py
-3. Download this repo, open up your python ide (e.g. spyder) and take a look at the example UserScript.py
+Here are the deployment options:
 
-4. If you just want the functions, import PyBP: ```from PyBP import *```
-5. (Get a template mesh & example overlay and network files, [here](https://www.dropbox.com/sh/w35j02u45602u4g/AACjzoSq-H7uskskiKBois3Ba?dl=0))
+1. Download this repo, navigate to it and launch the gui from command line using: $python New_PyBP.py
+2. Download this repo and use pyinstaller to compile it to a mac app or windows exe. Code for this included, see PyCompile_PyBP
+3. Download this repo, open up your python ide (e.g. spyder) and take a look at the example UserScript.py for how to call the functions and plots
+4. (not recommended, slow) Download the older, slower, tkinter based mac app (.dmg contains .app) from [here!](https://www.dropbox.com/s/iahvx7m6xtyfzp1/PyBP_G.dmg?dl=0)
+
+5. If you just want the functions, import PyBP: ```from PyBP import *```
+6. (Get a template mesh & example overlay and network files, [here](https://www.dropbox.com/sh/w35j02u45602u4g/AACjzoSq-H7uskskiKBois3Ba?dl=0))
 
 # The App.
  
