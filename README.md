@@ -5,7 +5,7 @@ The idea of this project is two-fold:
 2) I wanted to be able to plot both a functional overlay and a network (nodes & edges) simultaneously. 
 
 There are two versions:
-* Code version now uses a OpenGL, has traits(ui) rather than Tkinter interface and uses mayavi. Use this version.
+* Code version now uses Qt, has traits(ui) rather than Tkinter interface and uses mayavi. Fast. Use this version.
 * Old compiled version is still the old tkinter + matplotlib version (slow).
 
 # The Functions
