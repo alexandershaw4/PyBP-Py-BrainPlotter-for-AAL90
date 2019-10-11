@@ -11,6 +11,13 @@ AS2017
 '''
 # imports
 from __future__ import absolute_import, division, print_function
+
+import os
+#os.environ['ETS_TOOLKIT'] = 'qt4' #'qt4'
+#os.environ['QT_API'] = 'pyqt'
+
+
+
 #import matplotlib
 import numpy as np
 #import nibabel as nb
@@ -21,6 +28,7 @@ import operator
 from matplotlib import cm
 import os
 from scipy.interpolate import interp1d
+from scipy.spatial import Delaunay
 from skimage import measure
 import sys
 
@@ -31,10 +39,11 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import proj3d
 
 __all__ = ["GetMesh","PlotMesh","GetAAL","CtoN","PlotNet","cdist","spherefit",
-           "minpoints","maxpoints","alignoverlay","PlotMeshwOverlay",
+           "minpoints","maxpoints","alignoverlay_icp","PlotMeshwOverlay",
            "GenTestNet","GenTestOverlay","meshadj","normalize_v3","meshnormals",
            "inflate","ReadNiftiOverlay","template","orthogonal_proj",
-           "curvature","reducemesh","parseVertices"]
+           "curvature","parseVertices","definesources","ComputeROIParcels",
+           "alignoverlay_raycast"]
 
 thisdir = os.path.dirname(os.path.realpath(__file__))
 
@@ -49,7 +58,7 @@ def GetMesh(g):
     v[0] = v[0] - Centre[0]
     v[1] = v[1] - Centre[1]
     v[2] = v[2] - Centre[2]
-    v = fixboundary(v)
+    #v = fixboundary(v)
 
     return v, f
 
@@ -113,99 +122,6 @@ def curvature(v,f):
     return Curv
     
 
-def reducemesh(v,f):
-    # reduce a mesh by removing vertices of unimportant curvature
-    #
-    # AS
-    Curv = curvature(v,f)
-    A    = meshadj(v,f)
-    dv = v.copy()
-    df = f.copy()
-    aim  = int(np.round(v.shape[0]*.25)) # 25% reduction
-    ofst = int(np.round(aim/50))         # when recalc curvature
-    aim  = int(np.round(aim/ofst))
-    
-    for n in range(aim):
-        info = "Step %d" % (n+1)
-        info2= " : number of vertices = %d" % dv.shape[0]
-        info3= " (faces: %d)" % df.shape[0]
-        
-        print(info + info2 + info3)
-        Curv = curvature(dv,df)
-        Curv[np.isnan(Curv)]=Curv.min()
-        V,I = minpoints(abs(Curv),ofst)
-        # shuffle sequence
-        rseq = np.random.permutation(range(len(I)))
-        V = V[rseq]
-        I = I[rseq]
-        #I   = np.sort(I)
-        #ri = np.random.randint(ofst-1)
-        for j in range(len(I)):
-            if I[j] > 0:
-                dv = np.delete(dv, I[j], axis=0)
-            
-                # decrease face values above I[j]
-                fordec = np.array(np.where(df >= I[j]))
-                df[fordec[0],fordec[1]] = df[fordec[0],fordec[1]]-1
-                #I = I - 1
-                I[j:] = I[j:] - 1
-            
-                these = np.where(df == I[j])
-                if np.any(dv==v[I[j]-1]):
-                    A    = meshadj(dv,df)
-                    finds = np.array(np.where(A[I[j]-1]>0))
-
-                    if finds.size == 0:
-                        finds = np.array([I[j]-1])
-                    else:
-                        thivv,thisi = minpoints(np.abs(finds-I[j]).T,1)
-                        finds = finds[0][thisi]
-                        
-                    df[these[0],these[1]] = finds[0]
-                    #df[these[0],these[1]] = I[j]-1
-                    Curv = curvature(dv,df)   
-                    Curv[np.isnan(Curv)]=Curv.min()
-                    
-                else:
-                    df[these[0],these[1]] = I[j]-1
-                df = parseVertices(df)
-    #df = parseVertices(df)
-    check = df < 0
-    df[check] = 0
-    return dv,df
-            
-def newreducemesh(v,f):
-    # reduce a mesh by removing vertices close together, re-directing faces to clsest alternative
-    #
-    # AS
-    A    = meshadj(v,f)
-    dv = v.copy()
-    df = f.copy()
-
-    for i in range(len(dv)):
-		if i == len(dv):
-			print("Finished.")
-			break
-		A     = meshadj(dv,df)
-		adj   = np.array(np.where(A[i,:]>0))
-		alts  = np.squeeze(dv[adj])
-		if alts.any():
-			clos  = cdist(dv[i],alts)
-			vert,ind = minpoints(clos,1)
-			this  = dv[adj[0][ind][0]]
-			if abs(np.sum(abs(dv[i])-abs(this))) < 7:
-				str = "Removing vertex: %d (total: %d/%d) (%d%% reduction)" % (i, len(dv)-1, len(v), (float(len(dv))/float(len(v)))*100)
-				print(str)
-				dv[i] = this
-				xi,yi = np.where(df==i)    # replace face connections
-				df[xi,yi] = adj[0][ind[0]] # new vertex index
-				
-				xxi,yyi = np.where(df>i)   # redirect remaining faces
-				df[xxi,yyi] = df[xxi,yyi]-1
-				dv = parseVertices(dv)
-		
-        
-    
 def inflate(v,f):
     minxyz = np.array([v[:,0].min(),v[:,1].min(),v[:,2].min()])
     maxxyz = np.array([v[:,0].max(),v[:,1].max(),v[:,2].max()])
@@ -247,20 +163,6 @@ def PlotMesh(v,f):
     pts = mlab.triangular_mesh(v[:,0], v[:,1], v[:,2], f,color=(1,1,1),opacity=0.3)
     mlab.get_engine().scenes[0].scene.x_plus_view()
     mlab.view(0., 0.)
-    
-    
-#    limits = [v.min(), v.max()]
-#    cmap   = 'coolwarm'
-#    fig = plt.figure()
-#    ax = fig.add_subplot(111, projection='3d', xlim=limits, ylim=limits)
-#    ax.view_init(elev=0, azim=0)
-#    ax.set_axis_off()
-#
-#    p3dcollec = ax.plot_trisurf(v[:, 0], v[:, 1], v[:, 2],
-#                                triangles=f, linewidth=0.,
-#                                antialiased=False,
-#                                color='white',alpha=0.1)
-#    proj3d.persp_transformation = orthogonal_proj
     return pts, fig #ax, p3dcollec, fig
 
 def GetAAL():
@@ -372,7 +274,7 @@ def spherefit(X):
     B = np.array([ [np.mean((np.square(X[:,0])+np.square(X[:,1])+np.square(X[:,2]))*(X[:,0]-np.mean(X[:,0])))],
                    [np.mean((np.square(X[:,0])+np.square(X[:,1])+np.square(X[:,2]))*(X[:,1]-np.mean(X[:,1])))],
                    [np.mean((np.square(X[:,0])+np.square(X[:,1])+np.square(X[:,2]))*(X[:,2]-np.mean(X[:,2])))]])
-    Centre = np.linalg.lstsq(A,B)
+    Centre = np.linalg.lstsq(A,B,rcond=None) # avoid FutureWarning
     Centre = Centre[0]      # final solution is approx matlab unique solution
     return Centre
 
@@ -416,14 +318,45 @@ def maxpoints(x,n):
         dx[I[i]] = M
     return V,I
     
+
+def definesources(sourcemodel):
+    # this function defines the source locations so that it doesn't have to be AAL data.
+    # by inlcuding this, the software is no longer AAL specific but generalises.
+    # Sources locations may now be specified from an array, or from a nifti  or
+    # gifti file
+    if (type(sourcemodel) == str and sourcemodel == 'aal'):
+        v,l = GetAAL()
+        return v
+    elif (type(sourcemodel) == str and sourcemodel[-3:] == 'nii'):
+        v,f,vals = ReadNiftiOverlay(sourcemodel)    
+        return v, f, vals
+    elif (type(sourcemodel) == str and sourcemodel[-3:] == 'gii'):
+        v,f = GetMesh(sourcemodel)
+        return v
+    else:
+        v = sourcemodel
+        return v
+
+def ComputeROIParcels(v,i,vals):
+    # v is a long list of nx3 vertices, and i is nx1, where i[k] identifies which
+    # 'parcel' v[k] belongs to. Vals is the same length as unique(i) and is the 
+    # corrsponding functional value of that parcel
+    new = np.zeros([len(i),1])
+    for k in range(len(vals)):
+        these = i==k
+        new[these] = vals[k]
+    return new
     
-def alignoverlay(mv,f,o):
+    
+
+def alignoverlay_icp(mv,f,o,sv):
     # Iterative closest point search to align / project 90-element overlay (o) 
     # matched to AAL source vertices onto a mesh brain - defined  by the 
     # vertices and faces mv & f.
     
-    # read AAL sources
-    v,l = GetAAL()
+    # read AAL sources - not any more!
+    #v,l = GetAAL()
+    v = sv
     
     # initiate stuff
     OL = np.empty([len(o),len(mv)]) # brain vert * AAL vert matrix
@@ -459,13 +392,113 @@ def alignoverlay(mv,f,o):
     # normalise and rescale
     y = S[0] + [S[1]-S[0]] * (L - L.min()) / (L.max() - L.min() )
     
-    return y
+    return mv,f,y
     
+def CentreVerts(v):
+    nv = v.shape
+    v  = v - np.repeat(spherefit(v).T,nv[0],axis=0)
+    dv = v - np.repeat(spherefit(v).T,nv[0],axis=0)
+    return dv
+    
+def alignoverlay_raycast(mv,f,o,sv):
+    # Iterative closest point search to align / project 90-element overlay (o) 
+    # matched to AAL source vertices onto a mesh brain - defined  by the 
+    # vertices and faces mv & f.
+    
+    str = "Performing ray-casting alignment routine...\n"
+    print(str)
+    
+    # Get upper and lower boundaries of overlay
+    S  = np.array([o.min(),o.max()])
+    
+    # read AAL sources - not any more! use supplied source vertices
+    #v,l = GetAAL()
+    v = sv
+    y = mv[:,1].copy()*0
+    
+    
+    # centre both vertex lists
+    mv = CentreVerts(mv)
+    v  = CentreVerts(v)
+    
+    # ensure commmon box boundaries - i.e. we're in the same ballpark
+    b = v.min(axis=0)
+    B = v.max(axis=0)
+    
+    mv[:,0] = b[0] + [B[0]-b[0]] * (mv[:,0] - mv[:,0].min()) / (mv[:,0].max() - mv[:,0].min() )
+    mv[:,1] = b[1] + [B[1]-b[1]] * (mv[:,1] - mv[:,1].min()) / (mv[:,1].max() - mv[:,1].min() )
+    mv[:,2] = b[2] + [B[2]-b[2]] * (mv[:,2] - mv[:,2].min()) / (mv[:,2].max() - mv[:,2].min() )
+    
+    mv = np.around(mv,decimals=1)
+    v  = np.around(v,decimals=1)
+    
+    # compute vertex normals for source volume
+    #from scipy.spatial import Delaunay
+    tri = Delaunay(v)
+    sf  = tri.simplices.copy()
+    sf  = sf[:,0:3]
+    sn = meshnormals(v,sf)
+    nin = np.isnan(sn)
+    sn[nin] = 1
+    
+    step = np.linspace(-1,1,5)
+    
+    for i in step:
+        points = np.around(v + i*sn,decimals=1)
+        
+        for k in range(len(points)):
+            #hits = points[k,:] == mv
+            hits = mv == points[k,:]
+            ind  = np.where( sum(hits.T) == 3 )
+            y[ind] = y[ind] + o[k]
+            
+            
+    # normalise and rescale
+    y = S[0] + [S[1]-S[0]] * (y - y.min()) / (y.max() - y.min() )        
+    return mv,f,y
+        
+        
+    
+    
+#    # initiate stuff
+#    OL = np.empty([len(o),len(mv)]) # brain vert * AAL vert matrix
+#    r  = 1200                       # number of closest points
+#    w  = np.linspace(.1,1,r)        # 'weights'
+#    w  = np.flipud(w)
+#    #M  = np.empty([len(o),len(mv)])
+#    
+#    S  = np.array([o.min(),o.max()]) # ensure we can retain min/max vals
+#    x  = v[:,0]
+#    
+#    str = "Performing Raycasting alignment routine...\n"
+#    print(str)
+#    
+#    for i in range(len(x)):
+#        dist = cdist(mv,v[i])
+#        [junk,ind] = minpoints(dist,r)
+#        OL[i,ind]  = w*o[i]
+#        #M[i,ind]   = w
+#    
+#    numnan = 0;
+#    L = np.zeros([OL.shape[1],1]) # use zeros (instead empty) as speed not issue
+#    for i in range(OL.shape[1]):
+#        Col = np.argwhere(OL[:,i] != 0)
+#        L[i] = sum(OL[:,i] / len(Col))
+#        if np.isnan(L[i]):
+#            numnan = numnan + 1
+#            if numnan == 1:
+#                print("Instability warning: killing NaNs")
+#            L[i] = 0
+
+    
+    # normalise and rescale
+    y = S[0] + [S[1]-S[0]] * (L - L.min()) / (L.max() - L.min() )
+    
+    return y
+
 def PlotMeshwOverlay(v,f,y,a):
     # plot a surface (vert & faces) as a 3D patch (trisurf) with overlay
 
-    
-    
     
     fig = mlab.figure(1, bgcolor=(0, 0, 0))
     pts = mlab.triangular_mesh(v[:,0], v[:,1], v[:,2], f,scalars=y[:,0],opacity=a)
@@ -514,10 +547,10 @@ def GenTestOverlay():
 def ReadNiftiOverlay(y):
     y = nib.load(y)
     data = np.squeeze(y.get_data())
-    Sv,Sf,N,vals  = measure.marching_cubes(data,0.5)
-    vals = vals[np.newaxis].T
+    #Sv,Sf,N,vals  = measure.marching_cubes(data,0.5)
+    Sv,Sf,N,vals  = measure.marching_cubes_lewiner(data,step_size=1)
+    #vals = vals[np.newaxis].T
     return Sv,Sf,vals
-
 
 
 #    from skimage import restoration

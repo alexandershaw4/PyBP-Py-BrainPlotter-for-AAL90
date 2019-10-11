@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 '''
 Example user script for PyBP
 
@@ -8,32 +8,53 @@ AS
 import sys
 sys.path.append("/Users/Alex/code/PyBP/")
 
-from PyBP import *
+import PyBP
 import numpy as np
 import os
 
 
-# get template / example files
-thisdir = os.path.dirname(os.path.realpath(__file__))
+# define path where all the data are
+#------------------------------------------------------------------------------
+#thisdir = os.path.dirname(os.path.realpath(__file__))
+thisdir = "/Users/Alex/Dropbox/SourceMesh_TestDatas"
 
+# Get the mesh
+#------------------------------------------------------------------------------
+g   = thisdir + "/BrainMesh_Ch2.gii"  # the brain surface (gii)
+v,f = PyBP.GetMesh(g)                      # get vertices & faces
 
-# both overlay & network
-#-----------------------
-g   = thisdir + "/spm.surf.gii"  # the brain surface (gii)
-v,f = GetMesh(g)                    # get vertices & faces
+# define the source positions from an atlas
+#------------------------------------------------------------------------------
+AALv,AALf,AALi = PyBP.definesources('/Users/Alex/Dropbox/AAL_Template/AAL_Labels.nii')
 
-# load a t-vec of length 90
+# load ACTIVITY: a vec of length 90 (matching regions in ROI nifti) 
+#------------------------------------------------------------------------------
 funcfile = thisdir + "/OverlayData.txt"
 o = np.loadtxt(funcfile)
-y = alignoverlay(v,f,o) 
 
-AALv,L   = GetAAL()  # fetch AAL vertices & labels
+# now compute the functional values in the atlas
+# i.e. make the vertices of each parcel have the correct value
+#------------------------------------------------------------------------------
+overlay = PyBP.ComputeROIParcels(AALv,AALi,o)
+
+# Now project the source activity onto the mesh faces
+#------------------------------------------------------------------------------
+#y = PyBP.alignoverlay_icp(v,f,overlay,AALv) 
+nv,nf,y = PyBP.alignoverlay_raycast(v,f,overlay,AALv) 
+
+# Finally plot the overlay values on the glass brain
+#------------------------------------------------------------------------------
+pts,fig = PyBP.PlotMeshwOverlay(v,f,y,.05)
+
+
+# NETWORK
+#------------------------------------------------------------------------------
 file     = thisdir + "/exnet.edge"
 A        = np.loadtxt(file)  # load .edge file (90x90 matrix)
-xx,yy,vv = CtoN(A,AALv)
+xx,yy,vv = PyBP.CtoN(A,AALv)
 
-PlotMeshwOverlay(v,f,y,.05)
-PlotNet(xx,yy,vv)
+
+PyBP.PlotNet(xx,yy,vv)
 fig.show()
 
 
